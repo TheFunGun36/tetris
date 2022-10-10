@@ -45,7 +45,9 @@ private:
     // timer reply
     std::atomic_bool check_timestamp;
 
-    HANDLE hConsole;
+    HANDLE h_console_out;
+    HANDLE h_console_in;
+    DWORD prev_console_mode;
 
     std::atomic_bool gaming;
 

@@ -18,17 +18,24 @@ Game::Game(size_t sz_x, size_t sz_y)
         , event_is_timer(false)
         , event_key('\0')
         , event_notify(false) {
-    hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
+    h_console_out = GetStdHandle(STD_OUTPUT_HANDLE);
     CONSOLE_CURSOR_INFO cursorInfo;
-    GetConsoleCursorInfo(hConsole, &cursorInfo);
+    GetConsoleCursorInfo(h_console_out, &cursorInfo);
     cursorInfo.bVisible = false;
-    SetConsoleCursorInfo(hConsole, &cursorInfo);
+    SetConsoleCursorInfo(h_console_out, &cursorInfo);
+
+    h_console_in = GetStdHandle(STD_INPUT_HANDLE);
+    GetConsoleMode(h_console_in, &prev_console_mode);
+    SetConsoleMode(h_console_in, ENABLE_EXTENDED_FLAGS |
+                           (prev_console_mode & ~ENABLE_QUICK_EDIT_MODE));
 
     next_shape.add_to_map(map_next_shape);
     recalculate_time();
 }
 
-Game::~Game() = default;
+Game::~Game() {
+    SetConsoleMode(h_console_in, prev_console_mode);
+}
 
 void timer_loop(Game *game) {
     do {
@@ -241,7 +248,7 @@ void Game::handle_timer() {
 
 void Game::reset_cursor() const {
     // TODO: Windows only cursor reset
-    SetConsoleCursorPosition(hConsole, {0, 0});
+    SetConsoleCursorPosition(h_console_out, {0, 0});
 }
 
 void Game::place_shape() {
